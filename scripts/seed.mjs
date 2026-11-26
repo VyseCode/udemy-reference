@@ -27,12 +27,14 @@ const courseSchema = new mongoose.Schema(
     category: { type: String, required: true },
     price: { type: Number, default: 0 },
     thumbnail: { type: String, default: "" },
+    enrollmentCount: { type: Number, default: 0 },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
   { timestamps: true },
 );
 courseSchema.index({ status: 1, createdAt: -1 });
 courseSchema.index({ status: 1, price: 1 });
+courseSchema.index({ status: 1, enrollmentCount: -1 });
 courseSchema.index({ category: 1, status: 1 });
 courseSchema.index({ instructor: 1, updatedAt: -1 });
 courseSchema.index({ title: "text", description: "text", category: "text" });
@@ -507,6 +509,11 @@ async function main() {
       { user: lucas._id, course: ds._id, pricePaid: 0 },
       { user: sofia._id, course: product._id, pricePaid: 39.99 },
     ]);
+
+  for (const course of [react, ds, design, sql, product]) {
+    const count = await Enrollment.countDocuments({ course: course._id });
+    await Course.updateOne({ _id: course._id }, { $set: { enrollmentCount: count } });
+  }
 
   const now = new Date();
   await Progress.create(

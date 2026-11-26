@@ -64,7 +64,7 @@ export async function PUT(request: Request, context: Context) {
     await Quiz.findOneAndUpdate(
       { course: id },
       { $set: { questions: body.questions } },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: "after" },
     );
     return ok({ ok: true });
   } catch (error) {

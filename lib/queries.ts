@@ -47,6 +47,7 @@ type LeanCourse = {
   category: string;
   price: number;
   thumbnail: string;
+  enrollmentCount: number;
   status: "draft" | "published";
   createdAt: Date;
   instructor: { _id: Types.ObjectId; name: string } | Types.ObjectId;
@@ -148,7 +149,7 @@ function serializeCourse(
     instructor: instructorInfo(course),
     rating: stats.rating,
     reviewCount: stats.reviewCount,
-    studentCount: stats.studentCount,
+    studentCount: course.enrollmentCount ?? stats.studentCount,
     lectureCount: stats.lectureCount,
     totalMinutes: stats.totalMinutes,
     enrolled,
@@ -181,7 +182,7 @@ export async function listCourses(options: {
   }
 
   const sort = options.sort ?? "newest";
-  const ranked = sort === "rating" || sort === "popular";
+  const ranked = sort === "rating";
 
   let docs: LeanCourse[];
   let total: number;
@@ -195,9 +196,7 @@ export async function listCourses(options: {
     candidates.sort((a, b) => {
       const sa = stats.get(a._id.toString()) ?? emptyStats;
       const sb = stats.get(b._id.toString()) ?? emptyStats;
-      return sort === "rating"
-        ? sb.rating - sa.rating || sb.reviewCount - sa.reviewCount
-        : sb.studentCount - sa.studentCount || sb.rating - sa.rating;
+      return sb.rating - sa.rating || sb.reviewCount - sa.reviewCount;
     });
     total = candidates.length;
     docs = candidates.slice((page - 1) * limit, page * limit);
@@ -206,6 +205,7 @@ export async function listCourses(options: {
       newest: { createdAt: -1 },
       "price-asc": { price: 1 },
       "price-desc": { price: -1 },
+      popular: { enrollmentCount: -1 },
     };
     [docs, total] = await Promise.all([
       Course.find(filter)
@@ -585,7 +585,7 @@ export async function getInstructorDashboard(
         stats.get(course._id.toString()) ?? emptyStats,
         false,
       ),
-      students: revenueByCourse.get(course._id.toString())?.students ?? 0,
+      students: course.enrollmentCount ?? revenueByCourse.get(course._id.toString())?.students ?? 0,
       revenue: revenueByCourse.get(course._id.toString())?.revenue ?? 0,
     })),
   };

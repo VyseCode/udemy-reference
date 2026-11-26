@@ -32,6 +32,7 @@ export async function POST(_request: Request, context: Context) {
         pricePaid: receipt.amount,
         status: "active",
       });
+      await Course.updateOne({ _id: id }, { $inc: { enrollmentCount: 1 } });
       return ok(
         {
           enrollment: {

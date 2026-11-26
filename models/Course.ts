@@ -10,6 +10,7 @@ export interface ICourse {
   category: string;
   price: number;
   thumbnail: string;
+  enrollmentCount: number;
   status: CourseStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +29,7 @@ const courseSchema = new Schema<ICourse>(
     category: { type: String, required: true, trim: true, index: true },
     price: { type: Number, default: 0, min: 0 },
     thumbnail: { type: String, default: "" },
+    enrollmentCount: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
       enum: ["draft", "published"],
@@ -40,6 +42,7 @@ const courseSchema = new Schema<ICourse>(
 
 courseSchema.index({ status: 1, createdAt: -1 });
 courseSchema.index({ status: 1, price: 1 });
+courseSchema.index({ status: 1, enrollmentCount: -1 });
 courseSchema.index({ category: 1, status: 1 });
 courseSchema.index({ instructor: 1, updatedAt: -1 });
 courseSchema.index({ title: "text", description: "text", category: "text" });
