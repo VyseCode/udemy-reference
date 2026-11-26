@@ -25,12 +25,14 @@ const allLinks = [
   { href: "/teach", label: "Instructor studio", Icon: TeachIcon, roles: ["instructor"] },
 ];
 
-export function AppShell({ user, children }: { user: ShellUser; children: ReactNode }) {
+export function AppShell({ user, children }: { user: ShellUser | null; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const links = allLinks.filter((link) => link.roles.includes(user.role));
+  const links = allLinks.filter(
+    (link) => user ? link.roles.includes(user.role) : link.href === "/browse",
+  );
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -45,12 +47,14 @@ export function AppShell({ user, children }: { user: ShellUser; children: ReactN
     setOpen(false);
   }
 
-  const initials = user.name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "";
 
   return (
     <div className="flex min-h-screen">
@@ -109,23 +113,37 @@ export function AppShell({ user, children }: { user: ShellUser; children: ReactN
         </nav>
 
         <div className="mt-auto border-t border-line pt-4">
-          <div className="flex items-center gap-3 px-2">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive text-xs font-semibold text-white">
-              {initials}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{user.name}</p>
-              <p className="truncate text-xs text-muted">{user.role === "instructor" ? "Instructor" : "Learner"}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-3 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm text-muted transition hover:bg-paper hover:text-ink"
-          >
-            <LogoutIcon className="h-5 w-5" />
-            Sign out
-          </button>
+          {user ? (
+            <>
+              <div className="flex items-center gap-3 px-2">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive text-xs font-semibold text-white">
+                  {initials}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{user.name}</p>
+                  <p className="truncate text-xs text-muted">
+                    {user.role === "instructor" ? "Instructor" : "Learner"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="mt-3 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm text-muted transition hover:bg-paper hover:text-ink"
+              >
+                <LogoutIcon className="h-5 w-5" />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-md bg-ink px-3 py-2.5 text-sm font-semibold text-paper hover:bg-accent"
+            >
+              Sign in to continue
+            </Link>
+          )}
         </div>
       </aside>
 

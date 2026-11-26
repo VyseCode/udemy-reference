@@ -14,7 +14,6 @@ import type {
   CourseDetailDTO,
   CourseListItemDTO,
   CourseListResult,
-  EnrollmentDTO,
   InstructorDashboardDTO,
   LectureDTO,
   ProgressDTO,

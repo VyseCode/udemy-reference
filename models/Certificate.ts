@@ -33,7 +33,6 @@ const certificateSchema = new Schema<ICertificate>(
 );
 
 certificateSchema.index({ user: 1, course: 1 }, { unique: true });
-certificateSchema.index({ certificateId: 1 }, { unique: true });
 
 export const Certificate: Model<ICertificate> =
   (models.Certificate as Model<ICertificate>) ||
