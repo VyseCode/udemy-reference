@@ -482,6 +482,31 @@ export async function getCertificateForCourse(
   };
 }
 
+export async function getCertificatesForUser(
+  userId: string,
+): Promise<CertificateDTO[]> {
+  const docs = (await Certificate.find({ user: userId })
+    .populate("course", "title")
+    .populate("user", "name")
+    .sort({ issuedAt: -1 })
+    .lean()) as unknown as Array<{
+    _id: Types.ObjectId;
+    certificateId: string;
+    finalScore: number;
+    issuedAt: Date;
+    course: { title: string };
+    user: { name: string };
+  }>;
+  return docs.map((doc) => ({
+    id: doc._id.toString(),
+    certificateId: doc.certificateId,
+    finalScore: doc.finalScore,
+    issuedAt: doc.issuedAt.toISOString(),
+    courseTitle: doc.course?.title ?? "",
+    studentName: doc.user?.name ?? "",
+  }));
+}
+
 export async function getCertificateByCode(
   certificateId: string,
 ): Promise<CertificateDTO | null> {
